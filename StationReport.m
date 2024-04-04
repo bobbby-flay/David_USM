@@ -2,6 +2,7 @@ clear
 clc
 tic
 
+
 folder_path = uigetdir;
 
 % List all the files in the selected folder
@@ -33,7 +34,7 @@ end
 %%
 stationN = lisstvsfStationInfo_1.filename;
 figure('Position', [0, 0, 1920, 1080])
-nRows = 2;
+nRows = 3;
 nCols = 3;
 t = tiledlayout(nRows, nCols);
 title(t, ['Station: ' stationN]);
@@ -48,36 +49,6 @@ legend('External Temp')
 
 nexttile;
 hold on;
-cmap = winter(4);
-
-for i = 1:numel(trios_ramses)
-    for j = 1:numel(trios_ramses(i).Edp.raw)
-        A(:,j) = trios_ramses(i).Lwp.raw(:,4)';
-        B(:,j) = trios_ramses(i).Luz.raw(:,4)';
-    end
-    plot(A, 'Color', cmap(i,:));
-    plot(B, 'Color', cmap(i,:));
-end
-title('Lwp/Luz')
-hold off;
-
-nexttile;
-hold on;
-cmap = winter(4);
-
-for i = 1:numel(trios_ramses)
-    for j = 1:numel(trios_ramses(i).Edp.raw)
-        A(:,j) = trios_ramses(i).Edp.raw(:,4)';
-        B(:,j) = trios_ramses(i).Eop.raw(:,4)';
-    end
-    plot(A, 'Color', cmap(i,:));
-    plot(B, 'Color', cmap(i,:));
-end
-title('Edp/Eop')
-hold off;
-
-nexttile;
-hold on;
 num_wL = size(at, 2); 
 start_wL = 400; 
 end_wL = 700; 
@@ -86,12 +57,23 @@ wavelengths = linspace(start_wL, end_wL, num_wL);
 hold on;
 for i = 1:size(at, 1) 
     plot(wavelengths, at(i, :), 'LineWidth', 2);
+end
+hold off;
+xlabel('Wavelength (nm)');
+ylabel('a (m^-^1)');
+title('Absorption a_{t}');
+hold off;
+
+nexttile;
+hold on;
+hold on;
+for i = 1:size(ct, 1) 
     plot(wavelengths, ct(i, :), 'LineWidth', 2);
 end
 hold off;
 xlabel('Wavelength (nm)');
-ylabel('a(m^-^1)');
-title('AC-s');
+ylabel('a_{c}(m^-^1)');
+title('Attenuation c_{t}');
 hold off;
 
 nexttile;
@@ -112,22 +94,69 @@ hold off;
 
 nexttile;
 hold on;
-T = ctdSample(:,2);
-S = ctdSample(:,1);
-p0 = 999.842594+6.793952e-2.*T-9.095290e-3.*T.^2+1.001685e-4.*T.^3-1.120083e-6.*T.^4+6.536336e-9.*T.^5;
-A = 8.24493e-1-4.0899e-3.*T+7.6438e-5.*T.^2-8.2467e-7.*T.^3+5.3875e-9.*T.^4;
-B = 5.72466e-3+1.0227e-4.*T-1.6546e-6.*T.^2;
-C = 4.8314e-4;
-
-density = p0 + (A.*S) + (B.*S).^32 + (C.*S);
-
-
-
-
-scatter(T, S, 50, density, 'filled');
-colorbar;
-ylabel('Salinity');
-xlabel('Temperature (°C)');
-title('T-S Diagram');
+wavelength = linspace(400, 700, 255);
+hold on;
+colors = {'#570AA1', '#CE42AF', '#5F52C8', '#BE91EB'};
+labels = {'20 cm', '15 cm', '10 cm', '5 cm'};
+for depth = 1:4
+    for sample = 1:5
+    plot(wavelength, trios_ramses.profiling(depth).Lwp(sample).raw, 'LineWidth', 0.5, 'Color', colors{depth});
+    end
+end
+hold off;
+legend(labels);
+title('L_{wp} Radiance')
+xlabel('Wavelength (nm)')
+ylabel('L_{wp}')
 hold off;
 
+nexttile;
+hold on;
+hold on;
+colors = {'#570AA1', '#CE42AF', '#5F52C8', '#BE91EB'};
+labels = {'20 cm', '15 cm', '10 cm', '5 cm'};
+for depth = 1:4
+    for sample = 1:5
+    plot(wavelength, trios_ramses.profiling(depth).Luz(sample).raw, 'LineWidth', 0.5, 'Color', colors{depth});
+    end
+end
+hold off;
+legend(labels);
+title('L_{uz} Radiance')
+xlabel('Wavelength (nm)')
+ylabel('L_{uz}')
+hold off;
+
+nexttile;
+hold on;
+hold on;
+colors = {'#570AA1', '#CE42AF', '#5F52C8', '#BE91EB'};
+labels = {'20 cm', '15 cm', '10 cm', '5 cm'};
+for depth = 1:4
+    for sample = 1:5
+    plot(wavelength, trios_ramses.profiling(depth).Edp(sample).raw, 'LineWidth', 0.5, 'Color', colors{depth});
+    end
+end
+hold off;
+legend(labels);
+title('E_{dp} Irradiance')
+xlabel('Wavelength (nm)')
+ylabel('E_{dp}')
+hold off;
+
+nexttile;
+hold on;
+hold on;
+colors = {'#570AA1', '#CE42AF', '#5F52C8', '#BE91EB'};
+labels = {'20 cm', '15 cm', '10 cm', '5 cm'};
+for depth = 1:4
+    for sample = 1:5
+    plot(wavelength, trios_ramses.profiling(depth).Eop(sample).raw, 'LineWidth', 0.5, 'Color', colors{depth});
+    end
+end
+hold off;
+legend(labels);
+title('E_{op} Radiance')
+xlabel('Wavelength (nm)')
+ylabel('E_{op}')
+hold off;
